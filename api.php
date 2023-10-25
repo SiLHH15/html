@@ -13,55 +13,35 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::get('/subitems/{subcategory}', 'CategoryController@subcategories');
+Route::get('/search/{category}/{query}', 'ProductController@search');
+Route::get('/product/{product_id}', 'ProductController@product_info');
+Route::get('/category/{subcategory}', 'CategoryController@subcategory_products');
+Route::post('register', 'Auth\RegisterController@register');
+Route::post('logout', 'AuthenticationController@logoutAPI');
+Route::post('placeorder', 'OrderController@place_order');
+//Route::get('testemail', 'OrderController@test_email');
+Route::post('contact', 'ContactController@contact');
+
 Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+    return response()->json($request->user());
 });
 
-// Dashboard
-Route::get('/dashboard', 'DashboardController@index');
-
-// JWT Authenficiation
-Route::get('/auth', 'UserController@getAuthenticatedUser');
-Route::post('/register', 'UserController@register');
-Route::post('/login', 'UserController@login');
-
-// Address
-Route::get('/user/default-address', 'UserAddressController@show');
-Route::post('/user/create-user-address', 'UserAddressController@createUser');
-Route::post('/user/address', 'UserAddressController@store');
-
-// Product
-Route::get('/products', 'ProductController@index');
-Route::get('/products/{id}', 'ProductController@show');
-Route::get('/product/hot-deal', 'ProductDealsController@hotDeals');
-Route::post('/products', 'ProductController@store');
-Route::delete('/products/{id}', 'ProductController@destroy');
-
-// Product Orders
-Route::post('/stripe', 'ProductOrdersController@stripePost');
-Route::post('/product/orders', 'ProductOrdersController@store');
-
-// Product Categories
-Route::get('/product/categories', 'ProductCategoriesController@index');
-Route::get('/product/categories/{id}/top-selling', 'ProductCategoriesController@topSelling');
-Route::get('/product/categories/{id}/new', 'ProductCategoriesController@new');
-
-// Product Shopping Cart
-Route::get('/product/cart-list/count', 'ProductShoppingCartController@cartCount');
-Route::get('/product/cart-list/', 'ProductShoppingCartController@index');
-Route::post('/product/cart-list', 'ProductShoppingCartController@store');
-Route::post('/product/cart-list/guest', 'ProductShoppingCartController@guestCart');
-Route::put('/product/cart-list/{id}', 'ProductShoppingCartController@update');
-Route::delete('/product/cart-list/{id}', 'ProductShoppingCartController@destroy');
-
-//Product Wishlist
-Route::get('/product/wishlist/count', 'ProductWishlistController@count');
-Route::get('/product/wishlist', 'ProductWishlistController@index');
-Route::post('/product/wishlist', 'ProductWishlistController@store');
-Route::delete('/product/wishlist/{id}', 'ProductWishlistController@destroy');
-
-// Product Stocks
-Route::get('/product/stocks/{id}', 'ProductStocksController@show');
-
-// Newsletter
-Route::post('/newsletter', 'NewsLetterController@store');
+Route::group(["middleware" => 'auth:api'], function () {
+    // shopping cart routes
+    Route::post('addtocart', 'ShoppingCartController@add_to_cart');
+    Route::delete('removefromcart/{product_id}', 'ShoppingCartController@remove_from_cart');
+    Route::get('getusercart', 'ShoppingCartController@get_user_cart');
+    // wishlist routes
+    Route::get('getuserwishlist', 'WishlistController@get_user_wishlist');
+    Route::post('addtowishlist', 'WishlistController@add_to_wishlist');
+    Route::delete('removefromwishlist/{product_id}', 'WishlistController@remove_from_wishlist');
+    Route::post('wishlistcart', 'WishlistController@wishlist_to_cart');
+    // checkout routes
+    Route::get('checkoutinformation', 'OrderController@get_checkout_user_information');
+    // user order routes
+    Route::get('userorders', 'OrderController@get_user_orders');
+    Route::get('order/{order_id}', 'OrderController@order_detail');
+    // validate promo code
+    Route::post('validatepromo', 'OrderController@validate_promo_api');
+});
